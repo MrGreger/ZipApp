@@ -8,9 +8,10 @@
     <OutputType>Exe</OutputType>
     <RootNamespace>ZipApp</RootNamespace>
     <AssemblyName>ZipApp</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -42,8 +43,21 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Data\ByteChunk.cs" />
+    <Compile Include="Zipper\Compressor.cs" />
+    <Compile Include="Data\ConcurentQueue.cs" />
+    <Compile Include="Zipper\Decompressor.cs" />
+    <Compile Include="Data\UnorderedQueue.cs" />
+    <Compile Include="Validation\ArgumentsCountValidator.cs" />
+    <Compile Include="Validation\ArgumentsValidator.cs" />
+    <Compile Include="Data\OrderedQueue.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Validation\DestinationFileValidator.cs" />
+    <Compile Include="Validation\OperationValidator.cs" />
+    <Compile Include="Validation\SourceFileValidator.cs" />
+    <Compile Include="Validation\ValidationResult.cs" />
+    <Compile Include="Zipper\ZipperBase.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
