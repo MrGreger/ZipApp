@@ -24,7 +24,7 @@ namespace ZipApp
             if (validator.Validate(args).Succeeded == false)
             {
                 Console.WriteLine(validator.Validate(args).ErrorMessage);
-                Console.Read();
+                return 1;
             }
 
             _actions[args[0].ToLower()](args[1], args[2]);
