@@ -21,9 +21,11 @@ namespace ZipApp
             validator.SetChildValidator(operationValidator);
             operationValidator.SetChildValidator(sourceFileValidator);
 
-            if (validator.Validate(args).Succeeded == false)
+            var validationResult = validator.Validate(args);
+
+            if (validationResult.Succeeded == false)
             {
-                Console.WriteLine(validator.Validate(args).ErrorMessage);
+                Console.WriteLine(validationResult.ErrorMessage);
                 return 1;
             }
 
