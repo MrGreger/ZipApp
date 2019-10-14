@@ -45,12 +45,11 @@
   <ItemGroup>
     <Compile Include="Data\ByteChunk.cs" />
     <Compile Include="Zipper\Compressor.cs" />
-    <Compile Include="Data\ConcurentQueue.cs" />
     <Compile Include="Zipper\Decompressor.cs" />
-    <Compile Include="Data\UnorderedQueue.cs" />
+    <Compile Include="Data\OrderedPushQueue.cs" />
     <Compile Include="Validation\ArgumentsCountValidator.cs" />
     <Compile Include="Validation\ArgumentsValidator.cs" />
-    <Compile Include="Data\OrderedQueue.cs" />
+    <Compile Include="Data\OrderedPickQueue.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Validation\DestinationFileValidator.cs" />

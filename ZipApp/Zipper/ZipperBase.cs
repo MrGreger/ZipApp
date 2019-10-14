@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -23,8 +24,8 @@ namespace ZipApp.Zipper
         protected int _chunkSize = 1024 * 1024;
         protected int _chunkHeaderSize = 8;
         protected int _chunkSizeBytesCount = 4;
-        protected ConcurentQueue _transformationQueue;
-        protected ConcurentQueue _writeQueue;
+        protected OrderedPushQueue _transformationQueue;
+        protected OrderedPickQueue _writeQueue;
 
         private ManualResetEvent[] _onTransformationThreadEnd;
 
@@ -32,14 +33,20 @@ namespace ZipApp.Zipper
         {
             _filePath = filePath;
             _resultPath = resultPath;
-            _transformationQueue = new UnorderedQueue();
-            _writeQueue = new OrderedQueue();
+            _transformationQueue = new OrderedPushQueue(_threadsForTransformationCount * 2);
+            _writeQueue = new OrderedPickQueue();
             _onTransformationThreadEnd = new ManualResetEvent[_threadsForTransformationCount];
         }
 
         public void Start()
         {
+
             new Thread(ReadFile).Start();
+
+            while(_transformationQueue.QueueIsFull() == false)
+            {
+                //wait 
+            }
 
             for (int i = 0; i < _threadsForTransformationCount; i++)
             {
@@ -47,9 +54,20 @@ namespace ZipApp.Zipper
                 new Thread(new ParameterizedThreadStart(TransformFile)).Start(i);
             }
 
-            new Thread(WriteQueue).Start();
+            var writeQueue = new Thread(WriteQueue);
+
+            writeQueue.Start();
 
             WaitHandle.WaitAll(_onTransformationThreadEnd);
+
+            _writeQueue.Close();
+
+            writeQueue.Join();
+
+            for (int i = 0; i < _onTransformationThreadEnd.Length; i++)
+            {
+                _onTransformationThreadEnd[i].Close();
+            }
 
             _succeeded = true;
         }
@@ -71,9 +89,8 @@ namespace ZipApp.Zipper
                     byte[] buffer;
 
                     while (fs.Position != fs.Length && !_cancelled)
-                    {
+                    {             
                         buffer = GetChunkBytes(fs);
-
                         _transformationQueue.Enqueue(new ByteChunk(buffer));
                     }
 
