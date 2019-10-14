@@ -27,8 +27,6 @@ namespace ZipApp.Progress
             {
                 TotalProgress = amount;
 
-                Monitor.PulseAll(locker);
-
                 OnProgressChanged();
             }
         }
@@ -43,8 +41,6 @@ namespace ZipApp.Progress
             lock (locker)
             {
                 CurrentProgress += amount;
-
-                Monitor.PulseAll(locker);
 
                 OnProgressChanged();
             }
