@@ -41,6 +41,8 @@ namespace ZipApp.Zipper
                     var result = new ByteChunk(buffer, chunk.ChunkOrder);
                     _writeQueue.Enqueue(result);
                 }
+
+                ProgressHelper.AddProgress(chunk.Bytes.Length);
             }
         }
 

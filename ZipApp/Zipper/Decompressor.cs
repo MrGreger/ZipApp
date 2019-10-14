@@ -48,6 +48,7 @@ namespace ZipApp.Zipper
                     }
                 }
 
+                ProgressHelper.AddProgress(chunk.Bytes.Length);
             }
         }
 

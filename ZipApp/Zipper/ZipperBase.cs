@@ -6,12 +6,15 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using ZipApp.Data;
+using ZipApp.Progress;
 
 namespace ZipApp.Zipper
 {
     public abstract class ZipperBase
     {
         public int ResultCode => (_succeeded && !_cancelled) ? 0 : 1;
+
+        public ProgressHelper ProgressHelper { get; }
 
         private int _threadsForTransformationCount = Environment.ProcessorCount - 2;
         private bool _succeeded = false;
@@ -24,7 +27,7 @@ namespace ZipApp.Zipper
         protected int _chunkHeaderSize = 8;
         protected int _chunkSizeBytesCount = 4;
         protected ConcurentQueue _transformationQueue;
-        protected ConcurentQueue _writeQueue;
+        protected ConcurentQueue _writeQueue;    
 
         private ManualResetEvent[] _onTransformationThreadEnd;
 
@@ -35,6 +38,8 @@ namespace ZipApp.Zipper
             _transformationQueue = new UnorderedQueue();
             _writeQueue = new OrderedQueue();
             _onTransformationThreadEnd = new ManualResetEvent[_threadsForTransformationCount];
+
+            ProgressHelper = new ProgressHelper();
         }
 
         public void Start()
@@ -68,6 +73,8 @@ namespace ZipApp.Zipper
             {
                 using (FileStream fs = new FileStream(_filePath, FileMode.Open))
                 {
+                    ProgressHelper.SetTotalProgress(fs.Length);
+
                     byte[] buffer;
 
                     while (fs.Position != fs.Length && !_cancelled)

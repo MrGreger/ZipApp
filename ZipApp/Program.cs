@@ -31,14 +31,41 @@ namespace ZipApp
 
             _actions[args[0].ToLower()](args[1], args[2]);
 
+            zipper.ProgressHelper.ProgressChanged += OnProgressChanged;
+
+            Console.CursorVisible = false;
+
             zipper.Start();
+
+            Console.CursorVisible = true;
 
             if (zipper.ResultCode == 0)
             {
+                Console.WriteLine();           
                 Console.WriteLine("Done!");
             }
 
             return zipper.ResultCode;
+        }
+
+        private static void OnProgressChanged(object sender, Progress.ProgressChangedEventArgs e)
+        {
+            UpdatePercents(e.CurrentProgress, e.TotalProgress);
+        }
+
+        private static void UpdatePercents(long currentProgress, long totalProgress)
+        {
+            for (int i = Console.BufferWidth - 1; i >= 0; i--)
+            {
+                Console.SetCursorPosition(i, Console.CursorTop);
+                Console.Write("");
+            }
+
+            var progress = ((float)currentProgress / totalProgress) * 100;
+
+            var progressRounded = Math.Round(progress);
+
+            Console.Write($"  Progress: {progressRounded}%");
         }
 
         static void CompressFile(string sourcePath, string destinationPath)
@@ -50,7 +77,7 @@ namespace ZipApp
         static void DecompressFile(string sourcePath, string destinationPath)
         {
             Console.WriteLine("Decompressing started...");
-            zipper = new Decompressor(sourcePath, destinationPath);          
+            zipper = new Decompressor(sourcePath, destinationPath);
         }
 
         static void CancelKeyPress(object sender, ConsoleCancelEventArgs _args)
@@ -60,9 +87,9 @@ namespace ZipApp
                 Console.WriteLine("\nCancelling...");
                 _args.Cancel = true;
                 zipper.Stop();
-
             }
         }
+
 
     }
 }

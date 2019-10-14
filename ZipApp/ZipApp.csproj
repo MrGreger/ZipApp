@@ -44,6 +44,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Data\ByteChunk.cs" />
+    <Compile Include="Progress\ProgressChangedEventArgs.cs" />
+    <Compile Include="Progress\ProgressHelper.cs" />
     <Compile Include="Zipper\Compressor.cs" />
     <Compile Include="Data\ConcurentQueue.cs" />
     <Compile Include="Zipper\Decompressor.cs" />
