@@ -29,11 +29,6 @@ namespace ZipApp.Zipper
                     return;
                 }
 
-                if (chunk.ChunkOrder.Value == 5)
-                {
-
-                }
-
                 if (chunk.Bytes[2] != 0)
                 {
                     using (MemoryStream stream = new MemoryStream(chunk.Bytes))
