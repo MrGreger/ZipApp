@@ -14,7 +14,7 @@ namespace ZipApp.Zipper
     {
         public Compressor(string filePath, string resultPath) : base(filePath, resultPath)
         {
-       
+
         }
 
         protected override void Transform()
@@ -37,10 +37,24 @@ namespace ZipApp.Zipper
 
                     byte[] buffer = stream.ToArray();
 
-                    BitConverter.GetBytes(buffer.Length).CopyTo(buffer, _chunkSizeBytesCount);
+                    if (chunk.Bytes.Length + 8 < buffer.Length)
+                    {
+                        byte[] newBuffer = new byte[chunk.Bytes.Length + 8];
 
-                    var result = new ByteChunk(buffer, chunk.ChunkOrder);
-                    _writeQueue.Enqueue(result);
+                        BitConverter.GetBytes(newBuffer.Length).CopyTo(newBuffer, 4);
+
+                        chunk.Bytes.CopyTo(newBuffer, _chunkHeaderSize);
+
+                        _writeQueue.Enqueue(new ByteChunk(newBuffer, chunk.ChunkOrder));
+                    }
+                    else
+                    {
+                        BitConverter.GetBytes(buffer.Length).CopyTo(buffer, _chunkSizeBytesCount);
+
+                        var result = new ByteChunk(buffer, chunk.ChunkOrder);
+
+                        _writeQueue.Enqueue(result);
+                    }
                 }
             }
         }
