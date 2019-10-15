@@ -14,6 +14,9 @@ namespace ZipApp
 
         static int Main(string[] args)
         {
+             args = new string[3] { "compress", "10.2131.gz.packed.packed", "10.2131.gz.packed.packed.packed" };
+
+
             var validator = new ArgumentsCountValidator();
             var operationValidator = new OperationValidator();
             var sourceFileValidator = new SourceFileValidator(new DestinationFileValidator(null));
@@ -50,7 +53,7 @@ namespace ZipApp
         static void DecompressFile(string sourcePath, string destinationPath)
         {
             Console.WriteLine("Decompressing started...");
-            zipper = new Decompressor(sourcePath, destinationPath);          
+            zipper = new Decompressor(sourcePath, destinationPath);
         }
 
         static void CancelKeyPress(object sender, ConsoleCancelEventArgs _args)

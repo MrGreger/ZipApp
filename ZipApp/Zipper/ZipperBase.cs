@@ -24,6 +24,7 @@ namespace ZipApp.Zipper
         protected int _chunkSize = 1024 * 1024;
         protected int _chunkHeaderSize = 8;
         protected int _chunkSizeBytesCount = 4;
+        protected int _chunkCrcBlockLength = 4;
         protected OrderedPushQueue _transformationQueue;
         protected OrderedPickQueue _writeQueue;
 
@@ -40,41 +41,71 @@ namespace ZipApp.Zipper
 
         public void Start()
         {
-
-            new Thread(ReadFile).Start();
-
-            while(_transformationQueue.QueueIsFull() == false)
+            try
             {
-                //wait 
-            }
+                if (!CanMultithreadZip())
+                {
+                    Console.WriteLine("Processor cores count not enough for multithread zipping or unzipping.");
+                    _cancelled = true;
+                    return;
+                }
 
-            for (int i = 0; i < _threadsForTransformationCount; i++)
+                new Thread(ReadFile).Start();
+
+                while (_transformationQueue.QueueIsFull() == false && !_cancelled)
+                {
+                    //wait 
+                }
+
+                for (int i = 0; i < _threadsForTransformationCount; i++)
+                {
+                    _onTransformationThreadEnd[i] = new ManualResetEvent(false);
+                    var thread = new Thread(new ParameterizedThreadStart(TransformFile));
+                    thread.Start(i);
+                }
+
+                var writeQueue = new Thread(WriteQueue);
+
+                writeQueue.Start();
+
+                WaitHandle.WaitAll(_onTransformationThreadEnd);
+
+                _writeQueue.Close();
+
+                writeQueue.Join();
+
+                _succeeded = true;
+            }
+            finally
             {
-                _onTransformationThreadEnd[i] = new ManualResetEvent(false);
-                new Thread(new ParameterizedThreadStart(TransformFile)).Start(i);
+                CloseEvents();
             }
+        }
 
-            var writeQueue = new Thread(WriteQueue);
+        private bool CanMultithreadZip()
+        {
+            return _threadsForTransformationCount > 1;
+        }
 
-            writeQueue.Start();
-
-            WaitHandle.WaitAll(_onTransformationThreadEnd);
-
-            _writeQueue.Close();
-
-            writeQueue.Join();
-
+        private void CloseEvents()
+        {
             for (int i = 0; i < _onTransformationThreadEnd.Length; i++)
             {
-                _onTransformationThreadEnd[i].Close();
+                _onTransformationThreadEnd[i]?.Close();
             }
-
-            _succeeded = true;
         }
 
         public void Stop()
         {
+            CancelWork();
+        }
+
+        private void CancelWork()
+        {
             _cancelled = true;
+            _writeQueue.Close();
+            _transformationQueue.Close();
+            StopAllTransformationThreads();
         }
 
         protected abstract void Transform();
@@ -89,7 +120,7 @@ namespace ZipApp.Zipper
                     byte[] buffer;
 
                     while (fs.Position != fs.Length && !_cancelled)
-                    {             
+                    {
                         buffer = GetChunkBytes(fs);
                         _transformationQueue.Enqueue(new ByteChunk(buffer));
                     }
@@ -100,10 +131,11 @@ namespace ZipApp.Zipper
             catch (Exception e)
             {
                 Console.WriteLine("Error :" + e.Message);
-                _cancelled = true;
+                CancelWork();
             }
-          
+
         }
+
 
         private void TransformFile(object state)
         {
@@ -115,7 +147,17 @@ namespace ZipApp.Zipper
             catch (Exception e)
             {
                 Console.WriteLine("Error :" + e.Message);
-                _cancelled = true;
+
+                CancelWork();
+            }
+        }
+
+        private void StopAllTransformationThreads()
+        {
+            for (int i = 0; i < _onTransformationThreadEnd.Length; i++)
+            {
+                if(_onTransformationThreadEnd[i] != null && _onTransformationThreadEnd[i].SafeWaitHandle.IsClosed == false) { 
+                _onTransformationThreadEnd[i]?.Set();}
             }
         }
 
@@ -147,7 +189,7 @@ namespace ZipApp.Zipper
             catch (Exception e)
             {
                 Console.WriteLine("Error :" + e.Message);
-                _cancelled = true;
+                CancelWork();
             }
         }
 

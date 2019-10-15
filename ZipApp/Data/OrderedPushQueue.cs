@@ -59,11 +59,6 @@ namespace ZipApp.Data
         {
             lock (_queueLocker)
             {
-                if (_chunkCounter > 0 && _chunks.Count == 0)
-                {
-                    Console.WriteLine($"Простой {Thread.CurrentThread.ManagedThreadId}");
-                }
-
                 while (_chunks.Count == 0 && !_closed)
                 {
                     Monitor.Wait(_queueLocker);
