@@ -14,9 +14,6 @@ namespace ZipApp
 
         static int Main(string[] args)
         {
-             args = new string[3] { "compress", "10.2131.gz.packed.packed", "10.2131.gz.packed.packed.packed" };
-
-
             var validator = new ArgumentsCountValidator();
             var operationValidator = new OperationValidator();
             var sourceFileValidator = new SourceFileValidator(new DestinationFileValidator(null));
