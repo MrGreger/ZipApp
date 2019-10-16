@@ -84,7 +84,8 @@ namespace ZipApp.Zipper
 
         private bool CanMultithreadZip()
         {
-            return _threadsForTransformationCount > 1;
+            return _threadsForTransformationCount > 0
+;
         }
 
         private void CloseEvents()
